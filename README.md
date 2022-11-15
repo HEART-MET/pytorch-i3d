@@ -12,6 +12,8 @@ To train this model, update the path to the dataset, labels, and the logs direct
 ./run.sh
 ```
 
+### Get results for validation/test dataset
+
 To get the results on the validation set, update the path to the validation dataset and trained checkpoint in `test.sh` and run the script. This will generate a file `submission.json`, which can be zipped and submitted to Codalab.
 
 ```
