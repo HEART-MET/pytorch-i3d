@@ -12,7 +12,7 @@ import pytorch_lightning as pl
 class i3DTrainer(pl.LightningModule):
     def __init__(self, hparams, load_pretrained_charades=False):
         super().__init__()
-        self.hparams = hparams
+        self.save_hyperparameters(hparams)
 
         self.i3d = InceptionI3d(400, in_channels=3)
         if load_pretrained_charades:
@@ -68,3 +68,10 @@ class i3DTrainer(pl.LightningModule):
                                      transform=clip_transform, num_classes=self.hparams.num_classes)
         return torch.utils.data.DataLoader(train_dataset, batch_size=self.hparams.batch_size,
                                            shuffle=True, num_workers=self.hparams.n_threads, pin_memory=True)
+    def val_dataloader(self):
+        clip_transform = transforms.Compose([transforms.CenterCrop(448),
+                                             transforms.Resize(224)])
+        train_dataset = VideoDataset(self.hparams.validation_root, self.hparams.validation_labels,
+                                     transform=clip_transform, num_classes=self.hparams.num_classes)
+        return torch.utils.data.DataLoader(train_dataset, batch_size=self.hparams.batch_size,
+                                           shuffle=False, num_workers=self.hparams.n_threads, pin_memory=True)

@@ -1,8 +1,8 @@
 python main.py \
-  --train_root=../data/validation_set \
-  --train_labels=../data/validation_labels.txt \
+  --train_root=/path/to/training_set \
+  --train_labels=/path/to/training_labels.json \
   --model_path=models/rgb_charades.pt \
-  --num_classes=22 \
+  --num_classes=20 \
   --batch_size=8 \
   --default_root_dir=logs \
   --learning_rate=0.1 \

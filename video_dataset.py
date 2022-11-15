@@ -7,19 +7,26 @@ import os
 import glob
 import cv2
 import pdb
+import json
 
 def make_dataset(root, labels_file):
 
     samples = {}
     samples['timestamps'] = []
-    if not os.path.exists(root) or not os.path.exists(labels_file):
+    if not os.path.exists(root):
         return samples
     video_files = sorted(glob.glob(root + '/*.mp4'))
 
-    labels = np.genfromtxt(labels_file, dtype=None, encoding=None)
-    classes = {}
-    for lbl in labels:
-        classes[lbl[0]] = lbl[1]
+    if os.path.exists(labels_file):
+        with open(labels_file, 'r') as fp:
+            labels = json.load(fp)
+        classes = {}
+        for key, val in labels.items():
+            classes[key] = val[0]
+    else:
+        labels = None
+        classes = None
+
 
     frames_per_video = []
     pts = []
@@ -29,12 +36,15 @@ def make_dataset(root, labels_file):
         timestamps = np.array(timestamps)
         timestamps = timestamps[timestamps >= 0]
         num_frames = len(timestamps)
-        if os.path.basename(vid) not in classes.keys():
+        if classes is not None and os.path.basename(vid) not in classes.keys():
             print('Skipping %s since there is no label for it' % vid)
             continue
         frames_per_video.append(num_frames)
         pts.append(timestamps)
-        class_labels.append(classes[os.path.basename(vid)])
+        if classes is not None:
+            class_labels.append(classes[os.path.basename(vid)])
+        else:
+            class_labels.append(None)
 
     samples['timestamps'] = pts
     samples['num_frames_per_video'] = frames_per_video
@@ -45,7 +55,7 @@ def make_dataset(root, labels_file):
 
 
 class VideoDataset(data.Dataset):
-    def __init__(self, root, labels, clip_length = 20, transform=None, num_classes=22):
+    def __init__(self, root, labels, clip_length = 20, transform=None, num_classes=20):
         self.root = root
         samples = make_dataset(self.root, labels)
         if len(samples['timestamps']) == 0:
@@ -65,9 +75,13 @@ class VideoDataset(data.Dataset):
         else:
             frame_idx = index - self.frames_per_video[video_idx - 1]
         label = self.samples['labels'][video_idx]
-        label_one_hot_encoded = np.zeros(self.num_classes, dtype=np.float32)
-        label_one_hot_encoded[label] = 1
-        label_one_hot_encoded = torch.from_numpy(label_one_hot_encoded)
+        if label is not None:
+            label_one_hot_encoded = np.zeros(self.num_classes, dtype=np.float32)
+            label_one_hot_encoded[label] = 1
+            label_one_hot_encoded = torch.from_numpy(label_one_hot_encoded)
+        else:
+            label_one_hot_encoded = np.zeros(self.num_classes, dtype=np.float32)
+            label_one_hot_encoded = torch.from_numpy(label_one_hot_encoded)
 
         # get a clip starting at requested frame
         clip = self.get_clip(self.samples['timestamps'][video_idx], frame_idx, self.samples['video_paths'][video_idx])
@@ -96,6 +110,8 @@ class VideoDataset(data.Dataset):
             last_row = clip[-1].unsqueeze(0)
             last_row = last_row.repeat(padding, 1, 1, 1)
             clip = torch.cat((clip, last_row))
+        if padding < 0:
+            clip = clip[:self.clip_length]
         return clip
 
 
@@ -103,12 +119,8 @@ class VideoDataset(data.Dataset):
 def main():
     # To test just the dataset class, update the paths below to the dataset and the 
     # labels. The dataset folder is expected to contain .mp4 videos.
-    # the labels file contains two columns separated by spaces; the first column is the name
-    # of the video, and the second column is the class ID. For example one line of the file would look like:
     #
-    # video000.mp4 14
-    #
-    dataset = VideoDataset('../data/validation_set', '../data/validation_labels.txt')
+    dataset = VideoDataset('/path/to/training_set', '/path/to/training_labels.json')
     clip, label, video_id = dataset[0]
     print(clip.shape)
     print(label)
