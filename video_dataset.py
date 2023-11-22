@@ -13,7 +13,7 @@ def make_dataset(root, labels_file):
 
     samples = {}
     samples['timestamps'] = []
-    if not os.path.exists(root):
+    if not os.path.exists(root) or not os.path.exists(labels_file):
         return samples
     video_files = sorted(glob.glob(root + '/*.mp4'))
 
@@ -22,7 +22,7 @@ def make_dataset(root, labels_file):
             labels = json.load(fp)
         classes = {}
         for key, val in labels.items():
-            classes[key] = val[0]
+            classes[key] = val
     else:
         labels = None
         classes = None

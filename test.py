@@ -75,9 +75,14 @@ def main():
                 current_video = vv
                 results.pop(vv, None)
 
+    avg_result = np.argmax(np.stack(results[current_video]).mean(axis=0))
+    final_result[current_video] = avg_result
+    print('vid: %s result: %d label: %d' % (os.path.basename(val_loader.dataset.samples['video_paths'][current_video]), avg_result, all_labels[current_video]))
+    current_video = vv
+    results.pop(vv, None)
     recognized_classes = np.array(list(final_result.values()))
     ground_truth = np.array(list(all_labels.values()))
-    result_dict = dict([(os.path.basename(val_loader.dataset.samples['video_paths'][idx]), [int(final_result[idx])]) for idx in list(final_result.keys())])
+    result_dict = dict([(os.path.basename(val_loader.dataset.samples['video_paths'][idx]), int(final_result[idx])) for idx in list(final_result.keys())])
     with open('submission.json', 'w') as fp:
         json.dump(result_dict, fp)
 
