@@ -4,7 +4,7 @@ See the original source repository [here](https://github.com/piergiaj/pytorch-i3
 
 ### Fine tune the I3D model on your dataset
 
-The original source repository contains models trained on the Charades dataset (see [original README](https://github.com/piergiaj/pytorch-i3d)). This repository contains the code to fine-tune the RGB Charades model on a new dataset, namely, the training dataset from the [ICSR 2022 HEART-MET Activity Recognition Challenge](https://codalab.lisn.upsaclay.fr/competitions/8189).
+The original source repository contains models trained on the Charades dataset (see [original README](https://github.com/piergiaj/pytorch-i3d)). This repository contains the code to fine-tune the RGB Charades model on a new dataset, namely, the training datasets from the [HEART-MET Activity Recognition Challenge](https://codalab.lisn.upsaclay.fr/competitions/16096). A separate model will have to be trained for dataset A and dataset B.
 
 
 To train this model, update the path to the dataset, labels, and the logs directory in `run.sh` and run the script:
@@ -14,7 +14,7 @@ To train this model, update the path to the dataset, labels, and the logs direct
 
 ### Get results for validation/test dataset
 
-To get the results on the validation set, update the path to the validation dataset and trained checkpoint in `test.sh` and run the script. This will generate a file `submission.json`, which can be zipped and submitted to Codalab.
+To get the results on the validation/test set, update the path to the dataset and trained checkpoint in `test.sh` and run the script. This will generate a file `submission.json`. The `submission.json` file for each dataset will have to be merged based on the format specified on Codalab.
 
 ```
 ./test.sh
@@ -22,8 +22,8 @@ To get the results on the validation set, update the path to the validation data
 
 The code was tested with the following versions:
 ```
-torch==1.9.0
+torch==1.10.2
 pytorch-lightning==1.6.1
-torchvision==0.10.0
-av=8.0.2
+torchvision==0.11.3
+av=10.0.0
 ```
